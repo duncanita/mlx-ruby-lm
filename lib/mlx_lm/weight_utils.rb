@@ -71,6 +71,18 @@ module MlxLm
       elsif dtype_str == "U8"
         values = data.unpack("C*")
         mx.array(values, dtype: mx.uint8).reshape(shape)
+      elsif dtype_str == "U16"
+        values = data.unpack("S<*")
+        mx.array(values, dtype: mx.uint16).reshape(shape)
+      elsif dtype_str == "U32"
+        values = data.unpack("L<*")
+        mx.array(values, dtype: mx.uint32).reshape(shape)
+      elsif dtype_str == "I8"
+        values = data.unpack("c*")
+        mx.array(values, dtype: mx.int8).reshape(shape)
+      elsif dtype_str == "I16"
+        values = data.unpack("s<*")
+        mx.array(values, dtype: mx.int16).reshape(shape)
       else
         # Fallback: try F32
         values = data.unpack("e*")

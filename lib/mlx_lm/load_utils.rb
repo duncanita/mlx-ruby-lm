@@ -4,15 +4,27 @@ module MlxLm
   module LoadUtils
     module_function
 
-    # Load a model and tokenizer from a local directory.
+    # Load a model and tokenizer from a local directory or Hugging Face repo id.
     #
-    # @param model_path [String] Path to the model directory
+    # @param model_path [String] Local directory path, or HF repo id like "org/model"
     # @param tokenizer_config [Hash] Additional tokenizer config overrides
+    # @param revision [String] HF branch/tag/sha; ignored for local paths
     # @return [Array(nn::Module, TokenizerWrapper)] The loaded model and tokenizer
-    def load(model_path, tokenizer_config: nil)
-      model, _config = load_model(model_path)
-      tokenizer = load_tokenizer(model_path)
+    def load(model_path, tokenizer_config: nil, revision: "main")
+      local_path = resolve_path(model_path, revision: revision)
+      model, _config = load_model(local_path)
+      tokenizer = load_tokenizer(local_path)
       [model, tokenizer]
+    end
+
+    # Resolve a path-or-repo-id to a local directory, downloading from HF Hub if needed.
+    def resolve_path(path_or_repo, revision: "main")
+      return path_or_repo if File.directory?(path_or_repo)
+      Hub.snapshot_download(
+        path_or_repo,
+        revision: revision,
+        allow_patterns: ["*.json", "*.txt", "*.safetensors", "*.jinja", "*.model"],
+      ).to_s
     end
 
     # Load model from a local directory containing config.json and safetensors.
